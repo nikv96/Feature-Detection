@@ -1,116 +1,128 @@
-import numpy
+import urllib
 import cv2
+import numpy as np
+import os
 
-import sys
-
-'''Using the SURF Algorithm determine features in an image'''
-
-def ImageMatch(img1, img2):
-    detector = cv2.SURF(400, 5, 5)
-    matcher = cv2.BFMatcher(cv2.NORM_L2)
-
-    kp1, desc1 = detector.detectAndCompute(img1, None)
-    kp2, desc2 = detector.detectAndCompute(img2, None)
-
-    raw = matcher.knnMatch(desc1, trainDescriptors = desc2, k = 2) #2
-    kp_pairs = Filter(kp1, kp2, raw)
-    return kp_pairs
-
-def Filter(kp1, kp2, matches, ratio = 0.75):
-    mkp1, mkp2 = [], []
-    for m in matches:
-        if len(m) == 2 and m[0].distance < m[1].distance * ratio:
-            m = m[0]
-            mkp1.append( kp1[m.queryIdx] )
-            mkp2.append( kp2[m.trainIdx] )
-    kp_pairs = zip(mkp1, mkp2)
-    return kp_pairs
+def store_raw_images():
+    #http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513
+    #http://image-net.org/api/text/imagenet.synset.geturls?wnid=n07942152
+    neg_images_link = 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513'   
+    neg_image_urls = urllib.urlopen(neg_images_link).read().decode()
+    pic_num = 828
     
-def MatchExplorer(win, img1, img2, kp_pairs, status = None, H = None):
-    h1, w1 = img1.shape[:2]
-    h2, w2 = img2.shape[:2]
-    vis = numpy.zeros((max(h1, h2), w1+w2), numpy.uint8)
-    vis[:h1, :w1] = img1
-    vis[:h2, w1:w1+w2] = img2
-    vis = cv2.cvtColor(vis, cv2.COLOR_GRAY2BGR)
-
-    if H is not None:
-        corners = numpy.float32([[0, 0], [w1, 0], [w1, h1], [0, h1]])
-        corners = numpy.int32( cv2.perspectiveTransform(corners.reshape(1, -1, 2), H).reshape(-1, 2) + (w1, 0) )
-        cv2.polylines(vis, [corners], True, (255, 255, 255))
-
-    if status is None:
-        status = numpy.ones(len(kp_pairs), numpy.bool_)
-    p1 = numpy.int32([kpp[0].pt for kpp in kp_pairs])
-    p2 = numpy.int32([kpp[1].pt for kpp in kp_pairs]) + (w1, 0)
-
-    green = (0, 255, 0)
-    red = (0, 0, 255)
-    white = (255, 255, 255)
-    kp_color = (51, 103, 236)
-    for (x1, y1), (x2, y2), inlier in zip(p1, p2, status):
-        if inlier:
-            col = green
-            cv2.circle(vis, (x1, y1), 2, col, -1)
-            cv2.circle(vis, (x2, y2), 2, col, -1)
-        else:
-            col = red
-            r = 2
-            thickness = 3
-            cv2.line(vis, (x1-r, y1-r), (x1+r, y1+r), col, thickness)
-            cv2.line(vis, (x1-r, y1+r), (x1+r, y1-r), col, thickness)
-            cv2.line(vis, (x2-r, y2-r), (x2+r, y2+r), col, thickness)
-            cv2.line(vis, (x2-r, y2+r), (x2+r, y2-r), col, thickness)
-    vis0 = vis.copy()
-    for (x1, y1), (x2, y2), inlier in zip(p1, p2, status):
-        if inlier:
-            cv2.line(vis, (x1, y1), (x2, y2), green)
-
-    cv2.imshow(win, vis)
-
-
-  
-def draw(window_name, kp_pairs, img1, img2):
-    mkp1, mkp2 = zip(*kp_pairs)
-    
-    p1 = numpy.float32([kp.pt for kp in mkp1])
-    p2 = numpy.float32([kp.pt for kp in mkp2])
-    
-    if len(kp_pairs) >= 4:
-        H, status = cv2.findHomography(p1, p2, cv2.RANSAC, 5.0)
-    else:
-        H, status = None, None
-    
-    if len(p1):
-        MatchExplorer(window_name, img1, img2, kp_pairs, status, H)
-
-if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print "No filenames were specified"
-        print "python find_obj.py <image1> <image2>"
-        sys.exit(1)
-    
-    fn1 = sys.argv[1]
-    fn2 = sys.argv[2]
-
-    # GRAYSCALING THE IMAGE
-    img1 = cv2.imread(fn1, 0)
-    img2 = cv2.imread(fn2, 0)
-    
-    if img1 is None:
-	print('error')
-        sys.exit(1)
+    if not os.path.exists('neg'):
+        os.makedirs('neg')
         
-    if img2 is None:
-        print('error')
-        sys.exit(1)
+    for i in neg_image_urls.split('\n'):
+        try:
+            print(i)
+            urllib.urlretrieve(i, "neg/"+str(pic_num)+".jpg")
+            img = cv2.imread("neg/"+str(pic_num)+".jpg",cv2.IMREAD_GRAYSCALE)
+            # should be larger than samples / pos pic (so we can place our image on it)
+            resized_image = cv2.resize(img, (100, 100))
+            cv2.imwrite("neg/"+str(pic_num)+".jpg",resized_image)
+            pic_num += 1
+            
+        except Exception as e:
+            print(str(e))
 
-    kp_pairs = ImageMatch(img1, img2)
-    
-    if kp_pairs:
-        draw('find_obj', kp_pairs, img1, img2)
-        cv2.waitKey()
-        cv2.destroyAllWindows()    
-    else:
-        print "No matches found"
-    
+def create_pos_n_neg():
+    for file_type in ['neg']:
+        
+        for img in os.listdir(file_type):
+
+            if file_type == 'pos':
+                line = file_type+'/'+img+' 1 0 0 50 50\n'
+                with open('info.dat','a') as f:
+                    f.write(line)
+            elif file_type == 'neg':
+                line = file_type+'/'+img+'\n'
+                with open('bg.txt','a') as f:
+                    f.write(line)
+
+def get_target_pos():
+	'''
+	This function searches the video stream for the target and returns the position
+
+	input: 
+	output:
+	'''
+
+	target_cascade = cv2.CascadeClassifier('cascade.xml')
+	#Uncomment to test with image
+	img = cv2.imread("sample.jpg")
+
+	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+	target = target_cascade.detectMultiScale(gray, 1.2, 5)
+
+	print target
+
+	# add this
+	for (x,y,w,h) in target:
+		cv2.rectangle(img,(x,y),(x+w,y+h),(0,0,255),2)
+	cv2.namedWindow("RESULT", cv2.WINDOW_NORMAL)
+	cv2.imshow('RESULT',img)
+	k = cv2.waitKey() & 0xff
+	while not k == ord('q'):
+		pass
+	'''
+
+	#Comment when using video sample
+	cap = cv2.VideoCapture(0)
+
+	#Uncomment to see video output
+	#cv2.namedWindow("RESULT",cv2.WINDOW_NORMAL)
+
+	i=0
+	lock = True
+
+	while True:
+		ret, img = cap.read()
+		if ret == False:
+			print("Stream has ended")
+			break
+		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+		#Modify the cars array every 25 frames
+		if lock:
+			target = target_cascade.detectMultiScale(gray,1.1,5)
+			lock = not lock
+		
+		for (x,y,w,h) in target:
+			cv2.rectangle(img,(x,y),(x+w,y+h),(255,255,0),2)
+		
+		#Uncomment to see video output in gui
+		cv2.imshow('RESULT',img)
+		k = cv2.waitKey(10) & 0xff
+		i+=1
+		if i==25:
+			i=0
+			lock = not lock
+		if k == ord('q'):
+			break
+
+	cap.release()
+	'''
+	cv2.destroyAllWindows()
+	
+	xcenter = x+w/2
+	ycenter = y+h/2
+
+	#shift origin to center of the image
+	#NOTE: Change the pixels
+        x_pixel = xcenter - (640.0/2.0)
+        y_pixel = ycenter - (480.0/2.0)
+
+        #convert target location to angular radians
+        x_angle = x_pixel 
+	#* (self.camera_hfov / self.camera_width) * (math.pi/180.0)
+        y_angle = y_pixel 
+	#* (self.camera_vfov / self.camera_height) * (math.pi/180.0)
+
+	return (x_angle, y_angle)
+
+
+get_target_pos()
+#store_raw_images()
+#create_pos_n_neg()
