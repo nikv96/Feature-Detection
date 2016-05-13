@@ -1,3 +1,16 @@
+'''
+Steps to train HaarCascades classifier:
+
+1. Collect positive and negative images using the store_raw_images() function
+2. Have to create the bg.txt and info.dat file using function create_pos_n_neg().
+3. Create positive samples using 
+	```opencv_createsamples -img watch5050.jpg -bg bg.txt -info info/info.lst -pngoutput info -maxxangle 0.5 -maxyangle 0.5 -maxzangle 0.5 -num 1950```
+4. Create vector file using 
+	```opencv_createsamples -info info/info.lst -num 1950 -w 20 -h 20 -vec positives.vec```
+5. Run classifier trainer using 
+	```opencv_traincascade -data data -vec positives.vec -bg bg.txt -numPos 1800 -numNeg 900 -numStages 10 -w 20 -h 20```
+6. Copy the cascade file from data/ to /
+'''
 import urllib
 import cv2
 import numpy as np
