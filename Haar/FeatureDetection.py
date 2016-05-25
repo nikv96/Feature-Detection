@@ -67,7 +67,7 @@ def get_target_pos():
 
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-	target = target_cascade.detectMultiScale(gray, 1.2, 5)
+	target = target_cascade.detectMultiScale(gray, 7, 5)
 
 	print target
 
