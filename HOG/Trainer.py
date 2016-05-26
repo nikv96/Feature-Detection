@@ -113,15 +113,16 @@ def classifier_trainer(hard_neg=False):
 	print "Classifier saved"
 
 def hard_negative_mining():
-	neg_im_path = "/home/nikhil/Documents/PythonProjects/HOG/data/negative"
+	neg_im_path = "data/negative_hard"
 	clf = joblib.load(model_path)
-	i=1
+	i=260
 	
 	for im_path in glob.glob(os.path.join(neg_im_path, "*")):
+		detections = []
+		fds = {}
 		im = imread(im_path, as_grey=True)
 		scale = 0
 		for im_scaled in pyramid_gaussian(im, downscale=downscale):
-			cd = []
 			if im_scaled.shape[0] < min_wdw_size[1] or im_scaled.shape[1] < min_wdw_size[0]:
 				break
 			for (x, y, im_window) in sliding_window(im_scaled, min_wdw_size, step_size):
@@ -130,11 +131,19 @@ def hard_negative_mining():
 				fd = hog(im_window, orientations, pixels_per_cell, cells_per_block, visualize, normalize)
 				pred = clf.predict(fd)
 				if pred == 1:
-					f_name = str(i) + ".feat"
-					f_path = os.path.join("/home/nikhil/Documents/PythonProjects/HOG/features/hardneg", f_name)
-					joblib.dump(fd, f_path)
-					i+=1
+					det = (x, y, clf.decision_function(fd), int(min_wdw_size[0]*(downscale**scale)), int(min_wdw_size[1]*(downscale**scale)))
+					detections.append(det)
+					fds[(det[0],det[1],det[3],det[4])] = fd
 			scale+=1
+		detections = nms(detections, threshold)
+		for det in detections:
+			f = fds[(det[0],det[1],det[3],det[4])] 
+			f_name = str(i) + ".feat"
+			f_path = os.path.join("features/hardneg", f_name)
+			print f_path
+			joblib.dump(f, f_path)
+			i = i+1
+		
 	classifier_trainer(True)
 	print "Done with Hard Negative Mining"
 
@@ -144,7 +153,7 @@ warnings.warn = warn
 	
 
 if __name__ == "__main__":
-	#fix_size()
-	#feature_extractor()
-	#classifier_trainer()
+	fix_size()
+	feature_extractor()
+	classifier_trainer()
 	hard_negative_mining()
