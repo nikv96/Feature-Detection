@@ -21,3 +21,9 @@ Feature Detection using opencv and scikit. Feature detection is implemented usin
 # Contributors
 1. [Nikhil Venkatesh](https://github.com/nikv96)
 2. [Nicholas Adrian](https://github.com/nicholasadr)
+
+# References
+1. [Creating your own Haar Cascade OpenCV Python Tutorial](https://pythonprogramming.net/haar-cascade-object-detection-python-opencv-tutorial/)
+2. [Histogram of Oriented Gradients and Object Detection](http://www.pyimagesearch.com/2014/11/10/histogram-oriented-gradients-object-detection/)
+3. [(Faster) Non-Maximum Suppression in Python](http://www.pyimagesearch.com/2015/02/16/faster-non-maximum-suppression-python/)
+4. [Sliding Windows for Object Detection with Python and OpenCV](http://www.pyimagesearch.com/2015/03/23/sliding-windows-for-object-detection-with-python-and-opencv/)
