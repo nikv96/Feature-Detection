@@ -19,25 +19,28 @@ import os
 def store_raw_images():
     #http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513
     #http://image-net.org/api/text/imagenet.synset.geturls?wnid=n07942152
-    neg_images_link = 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513'   
-    neg_image_urls = urllib.urlopen(neg_images_link).read().decode()
-    pic_num = 828
+    #http://image-net.org/api/text/imagenet.synset.geturls?wnid=n00523513
+    f = open("img_links.txt",'r')
+    neg_images_link = 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04606574'  
+    neg_image_urls = f.read()
+    pic_num = 1
     
-    if not os.path.exists('neg'):
-        os.makedirs('neg')
+    if not os.path.exists('pos'):
+        os.makedirs('pos')
         
     for i in neg_image_urls.split('\n'):
         try:
             print(i)
-            urllib.urlretrieve(i, "neg/"+str(pic_num)+".jpg")
-            img = cv2.imread("neg/"+str(pic_num)+".jpg",cv2.IMREAD_GRAYSCALE)
+            urllib.urlretrieve(i, "pos/"+str(pic_num)+".jpg")
+            img = cv2.imread("pos/"+str(pic_num)+".jpg")
             # should be larger than samples / pos pic (so we can place our image on it)
             resized_image = cv2.resize(img, (100, 100))
-            cv2.imwrite("neg/"+str(pic_num)+".jpg",resized_image)
+            cv2.imwrite("pos/"+str(pic_num)+".jpg",resized_image)
             pic_num += 1
             
         except Exception as e:
             print(str(e))
+    f.close()
 
 def create_pos_n_neg():
     for file_type in ['neg']:
@@ -63,11 +66,12 @@ def get_target_pos():
 
 	target_cascade = cv2.CascadeClassifier('cascade.xml')
 	#Uncomment to test with image
+	'''
 	img = cv2.imread("sample.jpg")
 
 	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-	target = target_cascade.detectMultiScale(gray, 7, 5)
+	target = target_cascade.detectMultiScale(gray, 1.01, 3)
 
 	print target
 
@@ -82,13 +86,10 @@ def get_target_pos():
 	'''
 
 	#Comment when using video sample
-	cap = cv2.VideoCapture(0)
+	cap = cv2.VideoCapture(1)
 
 	#Uncomment to see video output
 	#cv2.namedWindow("RESULT",cv2.WINDOW_NORMAL)
-
-	i=0
-	lock = True
 
 	while True:
 		ret, img = cap.read()
@@ -98,42 +99,20 @@ def get_target_pos():
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 		#Modify the cars array every 25 frames
-		if lock:
-			target = target_cascade.detectMultiScale(gray,1.1,5)
-			lock = not lock
+		target = target_cascade.detectMultiScale(gray,1.01, 5)
 		
 		for (x,y,w,h) in target:
 			cv2.rectangle(img,(x,y),(x+w,y+h),(255,255,0),2)
 		
 		#Uncomment to see video output in gui
 		cv2.imshow('RESULT',img)
-		k = cv2.waitKey(10) & 0xff
-		i+=1
-		if i==25:
-			i=0
-			lock = not lock
+		k = cv2.waitKey(1) & 0xff
 		if k == ord('q'):
 			break
 
 	cap.release()
-	'''
-	cv2.destroyAllWindows()
 	
-	xcenter = x+w/2
-	ycenter = y+h/2
-
-	#shift origin to center of the image
-	#NOTE: Change the pixels
-        x_pixel = xcenter - (640.0/2.0)
-        y_pixel = ycenter - (480.0/2.0)
-
-        #convert target location to angular radians
-        x_angle = x_pixel 
-	#* (self.camera_hfov / self.camera_width) * (math.pi/180.0)
-        y_angle = y_pixel 
-	#* (self.camera_vfov / self.camera_height) * (math.pi/180.0)
-
-	return (x_angle, y_angle)
+	cv2.destroyAllWindows()
 
 
 get_target_pos()
