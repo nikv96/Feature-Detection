@@ -1,5 +1,5 @@
 # Feature-Detection
-Feature Detection using opencv and scikit. Feature detection is implemented using both [Haar-cascades](https://github.com/nikv96/Feature-Detection/tree/master/Haar) and [HOG descriptor](https://github.com/nikv96/Feature-Detection/tree/master/HOG) methods.
+Feature Detection using OpenCV-python and scikit-learn. Feature detection is implemented using both [Haar-cascades](https://github.com/nikv96/Feature-Detection/tree/master/Haar) and [HOG descriptor](https://github.com/nikv96/Feature-Detection/tree/master/HOG) methods.
 
 # How to Run
 1. Install all dependencies by running install.sh
