@@ -17,8 +17,8 @@ import glob
 import warnings
 
 #global variables
-pos_features = "/home/nikhil/Documents/PythonProjects/HOG/features/pos"
-neg_features = "/home/nikhil/Documents/PythonProjects/HOG/features/neg"
+pos_features = "features/pos"
+neg_features = "features/neg"
 min_wdw_size = (40, 40)
 step_size = [10, 10]
 orientations = 9
@@ -26,7 +26,7 @@ pixels_per_cell = [8,8]
 cells_per_block = [4,4]
 visualize = False
 normalize = True
-model_path = "/home/nikhil/Documents/PythonProjects/HOG/models/svm.model"
+model_path = "models/svm.model"
 threshold = 0
 downscale = 1.25
 
@@ -37,14 +37,14 @@ def sliding_window(image, window_size, step_size):
             yield (b, a, image[a:a + window_size[1], b:b + window_size[0]])
 
 def fix_size():
-	pos_im_path = "/home/nikhil/Documents/PythonProjects/HOG/data/positive"
-	neg_im_path = "/home/nikhil/Documents/PythonProjects/HOG/data/negative"
+	pos_im_path = "data/positive"
+	neg_im_path = "data/negative"
 
 	i=1	
 	for im_path in glob.glob(os.path.join(pos_im_path, "*")):
 		im = cv2.imread(im_path, 0)
 		res = cv2.resize(im, image_size, interpolation = cv2.INTER_CUBIC)
-		cv2.imwrite("/home/nikhil/Documents/PythonProjects/HOG/data/pos_corrected/"+str(i)+".png",res)
+		cv2.imwrite("data/pos_corrected/"+str(i)+".png",res)
 		i+=1
 	print "Positive features saved"
 	i=1
@@ -52,13 +52,13 @@ def fix_size():
 	for im_path in glob.glob(os.path.join(neg_im_path, "*")):
 		im = cv2.imread(im_path, 0)
 		res = cv2.resize(im, image_size, interpolation = cv2.INTER_CUBIC)
-		cv2.imwrite("/home/nikhil/Documents/PythonProjects/HOG/data/neg_corrected/"+str(i)+".png",res)
+		cv2.imwrite("data/neg_corrected/"+str(i)+".png",res)
 		i+=1
 	print "Negative features saved"
 
 def feature_extractor():
-	pos_im_path = "/home/nikhil/Documents/PythonProjects/HOG/data/pos_corrected"
-	neg_im_path = "/home/nikhil/Documents/PythonProjects/HOG/data/neg_corrected"
+	pos_im_path = "data/pos_corrected"
+	neg_im_path = "data/neg_corrected"
 	
 	for im_path in glob.glob(os.path.join(pos_im_path, "*")):
 		print im_path
@@ -97,7 +97,7 @@ def classifier_trainer(hard_neg=False):
 		labels.append(0)
 
 	if hard_neg:
-		for feat_path in glob.glob(os.path.join("/home/nikhil/Documents/PythonProjects/HOG/features/hardneg","*.feat")):
+		for feat_path in glob.glob(os.path.join("features/hardneg","*.feat")):
 			print feat_path
 			fd = joblib.load(feat_path)
 			fds.append(fd)
