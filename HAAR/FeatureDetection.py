@@ -1,10 +1,10 @@
 '''
 Steps to train HaarCascades classifier:
 
-1. Collect positive and negative images using the store_raw_images() function
+1. Collect positive and negative images using the store_raw_images() function. First enter url for variable neg_image_links.
 2. Have to create the bg.txt and info.dat file using function create_pos_n_neg().
 3. Create positive samples using 
-	```opencv_createsamples -img watch5050.jpg -bg bg.txt -info info/info.lst -pngoutput info -maxxangle 0.5 -maxyangle 0.5 -maxzangle 0.5 -num 1950```
+	```opencv_createsamples -img <<enter file name>> -bg bg.txt -info info/info.lst -pngoutput info -maxxangle 0.5 -maxyangle 0.5 -maxzangle 0.5 -num 1950```
 4. Create vector file using 
 	```opencv_createsamples -info info/info.lst -num 1950 -w 20 -h 20 -vec positives.vec```
 5. Run classifier trainer using 
@@ -18,7 +18,7 @@ import os
 
 def store_raw_images():
     f = open("img_links.txt",'r')
-    neg_images_link = 'http://image-net.org/api/text/imagenet.synset.geturls?wnid=n04606574'  
+    neg_images_link = ''  
     neg_image_urls = f.read()
     pic_num = 1
     
@@ -82,11 +82,9 @@ def get_target_pos():
 		pass
 	'''
 
-	#Comment when using video sample
 	cap = cv2.VideoCapture(1)
 
-	#Uncomment to see video output
-	#cv2.namedWindow("RESULT",cv2.WINDOW_NORMAL)
+	cv2.namedWindow("RESULT",cv2.WINDOW_NORMAL)
 
 	while True:
 		ret, img = cap.read()
@@ -101,7 +99,6 @@ def get_target_pos():
 		for (x,y,w,h) in target:
 			cv2.rectangle(img,(x,y),(x+w,y+h),(255,255,0),2)
 		
-		#Uncomment to see video output in gui
 		cv2.imshow('RESULT',img)
 		k = cv2.waitKey(1) & 0xff
 		if k == ord('q'):
@@ -112,6 +109,6 @@ def get_target_pos():
 	cv2.destroyAllWindows()
 
 if __name__=='__main__':
-	get_target_pos()
-	#store_raw_images()
+	#get_target_pos()
+	store_raw_images()
 	#create_pos_n_neg()
