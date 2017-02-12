@@ -51,7 +51,7 @@ def sliding_window(image, window_size, step_size):
 
 def test():
 
-	im = imread("test2.png", as_grey=True)
+	im = imread("4.jpg", as_grey=True)
 	min_wdw_sz = [40, 40]
 	step_size = [10, 10]
 	orientations = 9
@@ -59,7 +59,7 @@ def test():
 	cells_per_block = [4,4]
 	visualize = False
 	normalize = True
-	model_path = "/home/nikhil/Documents/PythonProjects/HOG/models/svm.model"
+	model_path = "models/svm.model"
 	threshold = 0
 	downscale = 1.25
 
